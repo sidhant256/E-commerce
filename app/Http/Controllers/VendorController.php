@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\VendorStatus;
+use App\Http\Requests\UpdateVendorRequest;
 use App\Models\Vendor;
 use App\Traits\ApiResponse;
-use Illuminate\Http\Request;
 
 class VendorController extends Controller
 {
@@ -26,21 +26,16 @@ class VendorController extends Controller
         return $this->success($vendor->load('user'));
     }
 
-    public function update(Vendor $vendor, Request $request)
+    public function update(UpdateVendorRequest $request, Vendor $vendor)
     {
         $this->authorize('update', $vendor);
 
-        $validated = $request->validate([
-            'store_name' => ['sometimes', 'string', 'max:255'],
-            'description'=> ['nullable', 'string'],
-        ]);
-
-        $vendor->update($validated);
+        $vendor->update($request->validated());
 
         return $this->success($vendor, 'Vendor profile updated.');
     }
 
-    public function approve (Vendor $vendor)
+    public function approve(Vendor $vendor)
     {
         $this->authorize('approve', $vendor);
 
@@ -54,9 +49,7 @@ class VendorController extends Controller
         $this->authorize('suspend', $vendor);
 
         $vendor->update(['status' => VendorStatus::Suspended]);
-        
+
         return $this->success($vendor, 'Vendor suspended.');
     }
-
-
 }
